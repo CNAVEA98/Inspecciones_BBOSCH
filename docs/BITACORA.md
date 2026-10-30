@@ -36,7 +36,7 @@ Registro de todo lo realizado, para trabajar en equipo en la carpeta compartida.
 | PDF server-side | Pendiente |
 | Verificación a 375px y 1440px, prueba con red apagada | Parcial (formularios a 375px con datos simulados) |
 
-Verificación global más reciente: `pnpm lint` sin errores · `pnpm tsc --noEmit` sin errores · `pnpm test` 33/33 · `pnpm build` correcto.
+Verificación global más reciente (2026-10-30, en `C:\Proyectos`): `pnpm lint` sin errores · `pnpm tsc --noEmit` sin errores · `pnpm test` 33/33 · `pnpm build` correcto.
 
 ## Pendientes
 
@@ -86,7 +86,7 @@ Referencia visual interactiva (sin servidor): `docs/muestras/formulario-transfor
 - **Autor:** Claude Code
 - **Qué se hizo:** el proyecto se copió del disco E: (exFAT, sin symlinks, fallaba `pnpm install`) a `C:\Proyectos\mlp-inspecciones` (NTFS). La demo estática pasó a `demo/` dentro del repo (antes `entregas-vercel/vercel-demo`; las entradas antiguas de esta bitácora conservan la ruta vieja). Se creó `.env.local` con valores de relleno para poder abrir `localhost:3000` sin Supabase (no se versiona: `.gitignore` excluye `.env*`). Repositorio privado en GitHub: `CNAVEA98/Inspecciones_BBOSCH`. Usuario de Linux en WSL renombrado a `cnv`.
 - **Archivos:** `demo/*`, `docs/formatos/LEEME.md`, `docs/BITACORA.md`.
-- **Verificación:** copia comparada con el original (101 archivos cada uno, sin `node_modules` ni `.next`); revisión previa al commit sin secretos ni archivos de más de 500 KB. Lint, tsc, tests y build **no se corrieron** tras la migración. Con el linker `hoisted` (necesario solo en exFAT), `npm run dev` arrancó y `/login` respondió 200 en el disco E:.
+- **Verificación:** copia comparada con el original (101 archivos cada uno, sin `node_modules` ni `.next`); revisión previa al commit sin secretos ni archivos de más de 500 KB. Ya en C: con `corepack pnpm install` normal (35 s, sin `hoisted`): `lint` sin errores, `tsc --noEmit` sin errores, `test` 33/33, `build` correcto. Con el linker `hoisted` (necesario solo en exFAT), `npm run dev` había arrancado y `/login` respondió 200 en E:. Primer commit `7fbf991` subido a `origin/main`. Esto cierra el pendiente «lint/tsc/tests/build sin verificar» de la entrada sobre la foto en ML.
 - **Pendiente / riesgos:** en C: reinstalar con `corepack pnpm install` (sin `hoisted`). Supabase local sigue sin probarse (Docker/WSL2 recién instalados). Usuario `supervisor@bbosch.cl` aún no creado (hoy el seed trae `supervisor@mlp.local`). Trabajo en equipo: ramas y Pull Requests; la bitácora es el punto con más riesgo de conflicto, agregar la entrada propia arriba y resolver al unir.
 
 ### 2026-10-30 · Formatos STN pasan a BBOSCH (firmantes)
