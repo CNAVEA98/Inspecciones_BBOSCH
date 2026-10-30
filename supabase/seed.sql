@@ -332,6 +332,7 @@ begin
   for u in
     select * from (values
       ('supervisor@mlp.local', 'dev-supervisor-123', 'Supervisora Demo', 'supervisor'),
+      ('supervisor@bbosch.cl', '1234', 'Supervisor BBOSCH', 'supervisor'),
       ('tecnico@mlp.local', 'dev-tecnico-123', 'Técnico Demo', 'technician')
     ) as t(email, pass, full_name, role)
   loop

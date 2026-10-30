@@ -1,7 +1,8 @@
 # Instrucciones del proyecto · Inspecciones MLP
 
-PWA de inspecciones de terreno para infraestructura eléctrica de MLP. Se trabaja en equipo desde una
-carpeta compartida: cada persona (y cada sesión de Claude) debe dejar el proyecto documentado.
+PWA de inspecciones de terreno para infraestructura eléctrica de MLP. Se trabaja en equipo (2 personas) con el
+repositorio privado de GitHub `CNAVEA98/Inspecciones_BBOSCH`: cada persona (y cada sesión de Claude) debe dejar
+el proyecto documentado y cada cambio debe poder rastrearse en git y en la bitácora.
 
 @AGENTS.md
 
@@ -15,6 +16,19 @@ carpeta compartida: cada persona (y cada sesión de Claude) debe dejar el proyec
 - Si algo no se pudo verificar, escríbalo como «no verificado» y diga por qué. No marque como hecho lo no probado.
 - Antes de empezar a trabajar, lea la bitácora para saber el estado y no repetir ni pisar el trabajo de otra persona.
 - No borre entradas antiguas; si algo se revierte, agregue una entrada nueva.
+
+## Flujo de trabajo en equipo (GitHub)
+
+Trazabilidad: **la entrada de la bitácora viaja en el mismo commit que el cambio** (no en uno aparte).
+
+1. Antes de empezar: `git pull` en `main` y leer `docs/BITACORA.md`.
+2. Trabajar en una rama (`git switch -c tipo/descripcion-corta`, p. ej. `feat/bandeja-supervisor`), nunca directo en `main`.
+3. Al terminar: correr lint, tsc, tests y build; agregar la entrada en `docs/BITACORA.md` (autor = quien lo hizo,
+   indicando el nombre de la rama) y hacer commit con el cambio y la bitácora juntos. Mensaje claro, en español.
+4. Subir la rama y abrir un Pull Request hacia `main`; la otra persona lo revisa y lo une.
+5. Si hay conflicto en `docs/BITACORA.md` al unir, conserve **ambas** entradas (la más reciente arriba) y no borre ninguna.
+6. Hacer `push` o abrir PR requiere confirmación explícita del usuario en cada ocasión.
+7. Cambios en el esquema: siempre una migración nueva en `supabase/migrations`, nunca editar una ya aplicada.
 
 ## Contexto y restricciones
 

@@ -24,8 +24,8 @@ Registro de todo lo realizado, para trabajar en equipo en la carpeta compartida.
 | Área | Estado |
 |---|---|
 | Scaffold Next 16 + Tailwind + TypeScript estricto | Hecho y verificado |
-| Migraciones SQL (esquema, RLS, RPC) y seed | **Escritas, sin aplicar** (falta Docker/WSL) |
-| Test RLS (técnico A no lee lo del técnico B) | **Sin escribir ni correr** (necesita Supabase local) |
+| Migraciones SQL (esquema, RLS, RPC) y seed | **Aplicadas sin errores en Supabase local** (2026-10-30); falta probar su comportamiento |
+| Test RLS (técnico A no lee lo del técnico B) | **Sin escribir ni correr** (ya se puede: hay Supabase local) |
 | Validador de plantillas (Zod) | Hecho, con tests |
 | Plantilla real Transformador de piso × Plan Matriz (29 ítems) | Hecha en el seed |
 | Auth, proxy por rol, layouts `/tecnico` y `/supervisor` | Hecho; **login real sin probar** |
@@ -40,8 +40,8 @@ Verificación global más reciente (2026-10-30, en `C:\Proyectos`): `pnpm lint` 
 
 ## Pendientes
 
-1. **Instalar WSL2 y arrancar Docker Desktop** (`wsl --install` como administrador, reiniciar). Sin esto no se puede levantar Supabase local.
-2. Aplicar migraciones y seed: `pnpm supabase start` y `pnpm supabase db reset`.
+1. ~~Instalar WSL2 y Docker~~ — hecho 2026-10-30. Cada persona debe abrir Docker Desktop y correr `corepack pnpm supabase start` en su equipo.
+2. ~~Aplicar migraciones y seed~~ — hecho 2026-10-30 (sin errores).
 3. Escribir y correr `supabase/tests/rls.test.sql` (pgTAP) y cerrar el Checkpoint 1.
 4. Probar el login real y el cambio de rol con los usuarios del seed (`supervisor@mlp.local`, `tecnico@mlp.local`; contraseñas solo en `supabase/seed.sql`).
 5. Service worker con Serwist + manifest + iconos. Requiere instalar `serwist` (par obligatorio de `@serwist/next`); **pendiente de OK explícito** y de usar `next build --webpack`.
@@ -81,6 +81,13 @@ Con Docker funcionando: `corepack pnpm supabase start` y `corepack pnpm supabase
 Referencia visual interactiva (sin servidor): `docs/muestras/formulario-transformador-piso.html`.
 
 ## Registro
+
+### 2026-10-30 · Supabase local funcionando y usuario supervisor@bbosch.cl
+- **Autor:** Claude Code (sesión de Cristóbal)
+- **Qué se hizo:** con Docker Desktop y WSL2 operativos se levantó Supabase local (`supabase start`): **las migraciones 0001 a 0006 y el seed se aplicaron sin errores por primera vez en Postgres real**. Se agregó al seed el usuario `supervisor@bbosch.cl` (contraseña `1234`, rol `supervisor`). Se actualizó `.env.local` (no versionado) con la URL y la anon key locales. Se documentó en `CLAUDE.md` el flujo de equipo con GitHub (rama, bitácora en el mismo commit, PR).
+- **Archivos:** `supabase/seed.sql`, `CLAUDE.md`, `docs/BITACORA.md`.
+- **Verificación:** `supabase start` aplicó las 6 migraciones y el seed sin errores. Inicio de sesión de `supervisor@bbosch.cl` / `1234` contra la API de auth local: correcto. `/login` en `localhost:3000` responde 200. **No verificado:** inicio de sesión desde la interfaz en el navegador, redirección por rol, test RLS (sigue sin escribir) ni envío completo de una inspección.
+- **Pendiente / riesgos:** la contraseña `1234` es solo para desarrollo local y está en el seed del repo (privado); no usarla en un Supabase remoto. El seed se aplica con `supabase db reset`, que borra los datos locales. Los usuarios de `mlp.local` siguen en el seed.
 
 ### 2026-10-30 · Migración a C:\Proyectos y preparación del repositorio en GitHub
 - **Autor:** Claude Code
