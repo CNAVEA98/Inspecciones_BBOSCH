@@ -325,6 +325,7 @@ from public.equipment_types et, public.work_modes wm
 where et.code = 'transformador_piso' and wm.code = 'plan_matriz';
 
 -- ---------- Usuarios de desarrollo (solo local) ----------
+-- Se entra con el usuario (TECNICO_A, SUPERVISOR_B…); el correo @mlp.local es interno y no se muestra.
 -- El trigger de alta crea los perfiles como 'technician'; rol y turno se asignan aquí por SQL.
 do $$
 declare
@@ -333,17 +334,13 @@ declare
 begin
   for u in
     select * from (values
-      ('admin@bbosch.cl', '10203040', 'Administrador BBOSCH', 'admin', null),
-      ('supervisor.a@bbosch.cl', '11112222', 'Supervisor Turno A', 'supervisor', 'A'),
-      ('supervisor.b@bbosch.cl', '33334444', 'Supervisor Turno B', 'supervisor', 'B'),
-      ('planificador.a@bbosch.cl', '55556666', 'Planificador Turno A', 'planner', 'A'),
-      ('planificador.b@bbosch.cl', '77778888', 'Planificador Turno B', 'planner', 'B'),
-      ('tecnico.a@bbosch.cl', '12121212', 'Técnico Turno A', 'technician', 'A'),
-      ('tecnico.b@bbosch.cl', '34343434', 'Técnico Turno B', 'technician', 'B'),
-      -- Usuarios anteriores (se conservan para no romper accesos ya usados).
-      ('supervisor@mlp.local', '78787878', 'Supervisora Demo', 'supervisor', 'A'),
-      ('supervisor@bbosch.cl', '56565656', 'Supervisor BBOSCH', 'supervisor', 'A'),
-      ('tecnico@mlp.local', '90909090', 'Técnico Demo', 'technician', 'A')
+      ('administrador@mlp.local', '10203040', 'Administrador', 'admin', null),
+      ('supervisor_a@mlp.local', '11112222', 'Supervisor A', 'supervisor', 'A'),
+      ('supervisor_b@mlp.local', '33334444', 'Supervisor B', 'supervisor', 'B'),
+      ('programador_a@mlp.local', '55556666', 'Programador A', 'planner', 'A'),
+      ('programador_b@mlp.local', '77778888', 'Programador B', 'planner', 'B'),
+      ('tecnico_a@mlp.local', '12121212', 'Técnico A', 'technician', 'A'),
+      ('tecnico_b@mlp.local', '34343434', 'Técnico B', 'technician', 'B')
     ) as t(email, pass, full_name, role, shift)
   loop
     v_id := gen_random_uuid();
