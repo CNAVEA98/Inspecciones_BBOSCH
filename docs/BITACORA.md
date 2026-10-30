@@ -1,0 +1,210 @@
+# Bitácora del proyecto · Inspecciones MLP
+
+Registro de todo lo realizado, para trabajar en equipo en la carpeta compartida.
+**Regla: cada mejora finalizada se registra aquí antes de darla por cerrada** (ver `CLAUDE.md`).
+
+## Cómo registrar una mejora
+
+1. Agregue una entrada **al inicio** de la sección «Registro» (la más reciente arriba), con este formato:
+
+   ```
+   ### AAAA-MM-DD · Título corto
+   - **Autor:** nombre
+   - **Qué se hizo:** 1 a 3 líneas
+   - **Archivos:** rutas principales
+   - **Verificación:** comando y resultado real (lint, tsc, tests, build, prueba manual) o «no verificado» y por qué
+   - **Pendiente / riesgos:** lo que quedó sin hacer o sin probar
+   ```
+2. Actualice la sección «Estado actual» y la lista «Pendientes» si cambian.
+3. Si un cambio modifica una decisión, anótelo también en «Decisiones».
+4. No borre entradas antiguas: si algo se revierte, agregue una entrada nueva que lo diga.
+
+## Estado actual (2026-10-29)
+
+| Área | Estado |
+|---|---|
+| Scaffold Next 16 + Tailwind + TypeScript estricto | Hecho y verificado |
+| Migraciones SQL (esquema, RLS, RPC) y seed | **Escritas, sin aplicar** (falta Docker/WSL) |
+| Test RLS (técnico A no lee lo del técnico B) | **Sin escribir ni correr** (necesita Supabase local) |
+| Validador de plantillas (Zod) | Hecho, con tests |
+| Plantilla real Transformador de piso × Plan Matriz (29 ítems) | Hecha en el seed |
+| Auth, proxy por rol, layouts `/tecnico` y `/supervisor` | Hecho; **login real sin probar** |
+| Núcleo offline (Dexie, cola, reintentos, compresión) | Hecho, con tests |
+| Flujo del técnico (Área → Equipo → Modo → formulario → envío) | Hecho; **sin probar contra Supabase** |
+| Service worker / PWA instalable | Pendiente |
+| Flujo del supervisor (bandeja, detalle, aprobar/rechazar, firma) | Pendiente (hoy solo hay maquetas vacías y la pantalla de usuarios) |
+| PDF server-side | Pendiente |
+| Verificación a 375px y 1440px, prueba con red apagada | Parcial (formularios a 375px con datos simulados) |
+
+Verificación global más reciente: `pnpm lint` sin errores · `pnpm tsc --noEmit` sin errores · `pnpm test` 33/33 · `pnpm build` correcto.
+
+## Pendientes
+
+1. **Instalar WSL2 y arrancar Docker Desktop** (`wsl --install` como administrador, reiniciar). Sin esto no se puede levantar Supabase local.
+2. Aplicar migraciones y seed: `pnpm supabase start` y `pnpm supabase db reset`.
+3. Escribir y correr `supabase/tests/rls.test.sql` (pgTAP) y cerrar el Checkpoint 1.
+4. Probar el login real y el cambio de rol con los usuarios del seed (`supervisor@mlp.local`, `tecnico@mlp.local`; contraseñas solo en `supabase/seed.sql`).
+5. Service worker con Serwist + manifest + iconos. Requiere instalar `serwist` (par obligatorio de `@serwist/next`); **pendiente de OK explícito** y de usar `next build --webpack`.
+6. Flujo del supervisor: bandeja con filtros, detalle, aprobar/rechazar con comentario, firma dibujada, registro inmutable.
+7. PDF con `@react-pdf/renderer` reproduciendo el diseño Cobre, con logo BBOSCH, guardado en Storage privado y URL firmada.
+8. Vista de solo lectura de inspecciones ya enviadas en `/tecnico`.
+9. Prueba de aceptación con red apagada: crear, completar, reconectar y ver en la bandeja del supervisor.
+10. Documentos: `docs/DECISIONES.md` y `docs/COMO_AGREGAR_AREA_EQUIPO.md`.
+11. Plantillas para los otros 4 equipos y el modo Mantenimiento programado (hoy solo existen en el catálogo, sin plantilla).
+
+## Decisiones
+
+- **Diseño «Cobre»** (grafito + cobre, bordes redondeados, números tipo instrumento), aprobado por el usuario. Nació de la familia SAP de awesome-design-md; IBM Carbon descartado. Detalle en `docs/DESIGN.md`.
+- **Sin geo-referencia:** se evaluó y el usuario la descartó; no hay columnas geo en el esquema.
+- **Sin modo oscuro, analytics ni notificaciones push** (fuera de alcance).
+- **Next 16:** el antiguo middleware se llama `src/proxy.ts`. Se desactivó `cacheComponents` (venía activo desde create-next-app) porque la app es autenticada y dinámica.
+- **Rol:** el registro crea siempre `technician`; solo un supervisor lo cambia (acción de servidor + RLS + trigger `guard_profile_role`). Un supervisor no puede quitarse su propio rol.
+- **Plantillas versionadas e inmutables** una vez publicadas; la inspección guarda `template_id` y `template_version`.
+- **Folio** `INS-AAAA-NNNNNN` lo asigna el servidor al enviar. Los IDs de inspección, fotos y hallazgos se generan en el cliente (idempotencia offline).
+- **Fotos** comprimidas en el cliente (lado mayor 1600 px, JPEG 0,7), ruta `{uid}/{inspection_id}/{foto}.jpg` en bucket privado.
+- **ML exige observación; NR exige motivo; la foto es opcional en todos los estados** (validado en cliente y en el validador de plantillas). Hasta el 2026-10-30 ML exigía también foto; se cambió a pedido del usuario para todas las inspecciones.
+- **Firma del participante** se guarda como adjunto `participant_signature`; la firma del supervisor va en la tabla `signatures`.
+- **Fuente Geist** vía `next/font` (se descarga en el build; requiere internet al compilar).
+
+## Cómo correr el proyecto
+
+```bash
+corepack pnpm install
+corepack pnpm lint
+corepack pnpm tsc --noEmit
+corepack pnpm test
+corepack pnpm build
+corepack pnpm dev            # necesita .env.local (copiar de .env.example)
+```
+
+Con Docker funcionando: `corepack pnpm supabase start` y `corepack pnpm supabase db reset`.
+Referencia visual interactiva (sin servidor): `docs/muestras/formulario-transformador-piso.html`.
+
+## Registro
+
+### 2026-10-30 · Migración a C:\Proyectos y preparación del repositorio en GitHub
+- **Autor:** Claude Code
+- **Qué se hizo:** el proyecto se copió del disco E: (exFAT, sin symlinks, fallaba `pnpm install`) a `C:\Proyectos\mlp-inspecciones` (NTFS). La demo estática pasó a `demo/` dentro del repo (antes `entregas-vercel/vercel-demo`; las entradas antiguas de esta bitácora conservan la ruta vieja). Se creó `.env.local` con valores de relleno para poder abrir `localhost:3000` sin Supabase (no se versiona: `.gitignore` excluye `.env*`). Repositorio privado en GitHub: `CNAVEA98/Inspecciones_BBOSCH`. Usuario de Linux en WSL renombrado a `cnv`.
+- **Archivos:** `demo/*`, `docs/formatos/LEEME.md`, `docs/BITACORA.md`.
+- **Verificación:** copia comparada con el original (101 archivos cada uno, sin `node_modules` ni `.next`); revisión previa al commit sin secretos ni archivos de más de 500 KB. Lint, tsc, tests y build **no se corrieron** tras la migración. Con el linker `hoisted` (necesario solo en exFAT), `npm run dev` arrancó y `/login` respondió 200 en el disco E:.
+- **Pendiente / riesgos:** en C: reinstalar con `corepack pnpm install` (sin `hoisted`). Supabase local sigue sin probarse (Docker/WSL2 recién instalados). Usuario `supervisor@bbosch.cl` aún no creado (hoy el seed trae `supervisor@mlp.local`). Trabajo en equipo: ramas y Pull Requests; la bitácora es el punto con más riesgo de conflicto, agregar la entrada propia arriba y resolver al unir.
+
+### 2026-10-30 · Formatos STN pasan a BBOSCH (firmantes)
+- **Autor:** Claude Code
+- **Qué se hizo:** el usuario indicó que STN era el contratista anterior y ahora es BBOSCH. En `formatos/desconectador-23kv.js` y `formatos/banco-condensadores-mauro.js` los firmantes pasan a «Supervisor BBOSCH» y «Planificador BBOSCH»; el logo BBOSCH del informe queda correcto. Se regeneró `vercel-demo.zip`.
+- **Verificación:** cambio de texto en la configuración; no se volvió a probar en el navegador.
+- **Pendiente / riesgos:** falta el número BBOSCH de cada estándar (hoy siguen como `EST-ELEC-INSP-MLP-STN-01` y `-02`). Los Word de `docs/formatos` no se modificaron.
+
+### 2026-10-30 · Demo: motor común de formularios + Desconectador 23 kV (STN-01) y Banco de Condensadores Mauro (STN-02)
+- **Autor:** Claude Code
+- **Qué se hizo:** nuevo `inspeccion.html` (motor común para inspecciones de un equipo) que carga la definición desde `formatos/<id>.js` según `?f=<id>`. Se crearon `formatos/desconectador-23kv.js` (24 ítems) y `formatos/banco-condensadores-mauro.js` (56 ítems), y se pasó Transformador de Piso a `formatos/transformador-piso.js` (conserva la clave de borrador `mlp-form-trafo-v1`). `formulario.html` quedó como redirección. El motor agrega lista de opciones por ítem (`opc`, usada en Abierto/Cerrado de los relés), lecturas y «Consideraciones» opcionales. Menú: se activaron los dos formatos nuevos y el formulario de grupos generadores pasó a la entrada «Insp. Prueba de Grupos Generadores… Chacay-Mina» que agregó el usuario; «Insp. Grupo Generador» queda «Próximamente».
+- **Supuestos:** norma `EST-ELEC-INSP-MLP-STN-0X`, confirmada por el usuario (el texto dentro del .docx dice `EST-ELEC-MLP-STN-0X`, sin INSP). Corrientes de relé en A; termografía del desconectador con valor opcional en °C. Agrupación de ítems en secciones propias. Logo BBOSCH en el informe aunque los firmantes sean STN.
+- **Archivos:** `entregas-vercel/vercel-demo/{inspeccion,formulario,inspecciones}.html`, `entregas-vercel/vercel-demo/formatos/*.js`, `entregas-vercel/vercel-demo.zip`, `docs/formatos/LEEME.md`.
+- **Verificación:** Edge headless, prueba scriptada de los 3 formatos: grupos cubren todos los ítems, validación completa, ML sin observación bloquea y sin foto no, consideraciones según formato, lista Abierto/Cerrado guarda y se ve en el informe, lectura de corriente 12,5 A, firmantes STN, lecturas del transformador intactas; sin errores de JavaScript. `?f=` inexistente muestra «Formulario no encontrado». Sin prueba en teléfono ni redeploy.
+- **Pendiente / riesgos:** confirmar códigos de norma, unidades y si el logo del informe debe cambiar para formatos STN.
+
+### 2026-10-30 · La foto deja de ser obligatoria en ML (todas las inspecciones)
+- **Autor:** Claude Code
+- **Qué se hizo:** a pedido del usuario, ML, NO y NR exigen solo observación; la opción de tomar foto sigue disponible en todos los ítems. Aplicado en la app Next (validador de plantillas, borrador del técnico, etiqueta «Foto (opcional)»), en los dos formularios de la demo y en la muestra de `docs/muestras`. Se actualizaron los tests y `docs/DESIGN.md`. Se regeneró `vercel-demo.zip`.
+- **Archivos:** `src/lib/templates/{validate,schema,validate.test}.ts`, `src/lib/tecnico/{draft,draft.test}.ts`, `src/components/tecnico/item-field.tsx`, `docs/DESIGN.md`, `docs/muestras/formulario-transformador-piso.html`, `entregas-vercel/vercel-demo/{formulario,formulario-grupo-generador}.html`.
+- **Verificación:** **lint, tsc y tests no verificados**: en este equipo Node.js no está instalado o no está en el PATH (`node`, `corepack`, `pnpm` no se reconocen). Demo verificada en Edge headless: en ambos formularios un ítem ML con observación y sin foto queda sin faltas, sin errores de JavaScript.
+- **Pendiente / riesgos:** correr `corepack pnpm lint`, `tsc --noEmit`, `test` y `build` en un equipo con Node. Un hallazgo ML sin foto se envía con `photo_attachment_id = null` (la columna lo admite).
+
+### 2026-10-30 · Demo: formulario Pruebas Grupos Generadores Chacay-Mina (EST-ELEC-INSP-MLP-BBOSCH-18)
+- **Autor:** Claude Code
+- **Qué se hizo:** a partir de `docs/formatos/18_INSPECCION PRUEBAS DE GRUPOS GENERADORES…docx` se creó `formulario-grupo-generador.html` (mismo diseño y motor que el de transformador). Una inspección incluye **varios grupos generadores** (el formato pide «Cantidad de equipos»): selector de grupos con «＋ Agregar», TAG y 30 ítems por grupo. Ítems 22 y 26 usan SÍ/NO/NA/NR; ítem 27 es fecha. Reglas: ML exige observación y foto; NO y NR exigen observación. El informe muestra un resumen total y, por grupo, lecturas con horas de prueba y energía generada calculadas (horómetro y energía después − actual). Activado en el menú `inspecciones.html`.
+- **Supuestos:** unidades no indicadas en el formato: Voltaje batería y Tensión cargador en V, Potencia en kW, Horómetro en h, Corrientes en A. Agrupación de ítems en 7 secciones (no está en el formato).
+- **Archivos:** `entregas-vercel/vercel-demo/{formulario-grupo-generador,inspecciones}.html`, `entregas-vercel/vercel-demo.zip`.
+- **Verificación:** Edge headless a 1300px y 600px sin errores de JavaScript. Prueba scriptada con 2 grupos: agregar/quitar grupo, SÍ/NO, validación (NO sin observación y ML sin foto bloquean), 58/60 conformes, horas de prueba 0,5 y energía 150 kWh correctas, fecha del extintor en dd-mm-aaaa. Sin prueba en teléfono ni redeploy.
+- **Pendiente / riesgos:** confirmar unidades y si Potencia es kW; no existe aún plantilla de este formato en `supabase/seed.sql` para la app Next.
+
+### 2026-10-30 · Demo: menú de tipos de inspección
+- **Autor:** Claude Code
+- **Qué se hizo:** nueva página `inspecciones.html` con la lista de tipos (Transformador de Piso, Transformador Aéreo, Reconectador, Grupo Generador, Parrón de Maniobras). Solo Transformador de Piso abre formulario (`formulario.html`); los demás muestran «Próximamente». La lista es el arreglo `TIPOS` al inicio del script: para habilitar uno se agrega su formulario y su `href`. «Formularios Inspecciones» en la portada lleva ahora al menú, y el formulario tiene «← Volver» al menú y título «Insp. Transformador de Piso». Se regeneró `vercel-demo.zip`.
+- **Archivos:** `entregas-vercel/vercel-demo/{inspecciones,index,formulario}.html`, `entregas-vercel/vercel-demo.zip`.
+- **Verificación:** Edge headless a 600px: menú y barra del formulario se ven correctos. Sin redeploy ni prueba en teléfono.
+- **Pendiente / riesgos:** listado final de tipos y sus formularios; en la app Next el equivalente es el catálogo de equipos y plantillas en Supabase.
+
+### 2026-10-30 · Demo: texto superpuesto del informe en iPhone
+- **Autor:** Claude Code
+- **Qué se hizo:** el informe reduce las hojas A4 con `zoom` y Safari iOS agrandaba el texto (autosizing), por lo que las filas se superponían. Se agregó `text-size-adjust: 100%` en `formulario.html` e `informe.html` de la demo. Se regeneró `vercel-demo.zip`.
+- **Archivos:** `entregas-vercel/vercel-demo/{formulario,informe}.html`, `entregas-vercel/vercel-demo.zip`.
+- **Verificación:** Edge a 1200px: el informe se ve igual que antes. **En iPhone no verificado** (el autosizing solo ocurre en Safari iOS; falta redeploy y prueba en el teléfono).
+- **Pendiente / riesgos:** las muestras de `docs/muestras/` tienen el mismo problema; la app Next debe incluir la misma regla cuando tenga la vista de informe.
+
+### 2026-10-30 · Demo: se quitan botones Formulario, Informe y Cargar ejemplo
+- **Autor:** Claude Code
+- **Qué se hizo:** en `entregas-vercel/vercel-demo/formulario.html` se eliminaron los botones «Formulario», «Informe» (pestañas que solo se veían bajo 1000px) y «Cargar ejemplo», con su listener. En móvil queda siempre la vista del formulario; «Imprimir / PDF» pasa al informe y vuelve al formulario al cerrar la impresión (`afterprint`). Se regeneró `vercel-demo.zip`. La muestra original en `docs/muestras/` no se tocó.
+- **Archivos:** `entregas-vercel/vercel-demo/formulario.html`, `entregas-vercel/vercel-demo.zip`.
+- **Verificación:** Edge headless a 600px: carga sin errores de JavaScript y la barra muestra solo En línea, Borrar todo, Enviar inspección e Imprimir / PDF. La vuelta tras imprimir en un teléfono real no se probó. Sin redeploy.
+- **Pendiente / riesgos:** en móvil el informe ya no se puede ver en pantalla, solo al imprimir. En la vista de informe en el teléfono el texto de los ítems se superpone (visto en captura del usuario).
+
+### 2026-10-30 · Portada de la demo: «Standard Job» con logo BBOSCH
+- **Autor:** Claude Code
+- **Qué se hizo:** en `entregas-vercel/vercel-demo/index.html` el título pasa de «Inspecciones MLP» a «Standard Job», se agrega el logo BBOSCH arriba (caja blanca redondeada, copia en `vercel-demo/brand/`) y las opciones pasan a «Formularios Inspecciones» (abre `formulario.html`) y «Formulario Mantenciones» (deshabilitada, «Próximamente», porque aún no hay plantilla de mantenimiento). Se quitó el acceso a `informe.html` desde la portada (el archivo sigue publicado). Se regeneró `vercel-demo.zip`.
+- **Archivos:** `entregas-vercel/vercel-demo/index.html`, `entregas-vercel/vercel-demo/brand/bbosch-logo.png`, `entregas-vercel/vercel-demo.zip`.
+- **Verificación:** captura con Edge headless a 600px: logo, título y botones correctos. No se volvió a desplegar en Vercel.
+- **Pendiente / riesgos:** falta redeploy en Vercel para ver el cambio en el teléfono; definir a dónde lleva «Formulario Mantenciones».
+
+### 2026-10-29 · Entregables para probar en Vercel
+- **Autor:** Claude Code
+- **Qué se hizo:** carpeta `Proyectos/entregas-vercel/` con `mlp-inspecciones.zip` (proyecto sin `node_modules`, `.next`, `.git` ni `.env*`), `vercel-demo.zip` (HTML estáticos del formulario e informe, sin Supabase), `supabase-sql.zip` (migraciones concatenadas y catálogo con la plantilla, sin usuarios de desarrollo) y `LEEME_DEPLOY_VERCEL.md`. Guía en `docs/DEPLOY_VERCEL.md`. No se hizo ningún deploy ni se tocó ningún Supabase remoto.
+- **Archivos:** `docs/DEPLOY_VERCEL.md`, `entregas-vercel/*`.
+- **Verificación:** el ZIP del proyecto pesa 682 KB, sin `node_modules` y con `pnpm-lock.yaml`; los SQL no incluyen `mlp.local`. El deploy en Vercel y la ejecución de los SQL en un Supabase real **no se han probado**.
+- **Pendiente / riesgos:** las migraciones nunca se han ejecutado en Postgres real; pueden fallar al primer intento. Sin service worker, la prueba con red apagada solo funciona si no se recarga la página.
+
+### 2026-10-29 · Flujo del técnico (UI)
+- **Autor:** Claude Code
+- **Qué se hizo:** inicio con lista de inspecciones e indicador de sincronización; selección Área → Equipo → Modo desde el catálogo (con copia local); formulario por secciones con estados BN/ML/NT/NA/NR, valores con unidad, fotos, severidad de hallazgo, firma dibujada, revisión y envío a la cola offline. La copia local del catálogo se muestra al instante y se actualiza en segundo plano.
+- **Archivos:** `src/components/tecnico/*`, `src/app/tecnico/**`, `src/lib/tecnico/{catalog,draft,photos,hooks}.ts`, `src/lib/fecha.ts`; migración `0004` (adjunto `participant_signature`).
+- **Verificación:** lint, tsc y build sin errores; `pnpm test` 33/33 (6 nuevos en `draft.test.ts`). Prueba manual a 375px con Supabase inalcanzable y catálogo simulado: selección, creación del borrador, guardado local y pantalla de revisión con 7 problemas.
+- **Pendiente / riesgos:** envío completo (firma real, subida de fotos, RPC) sin probar contra Supabase; falta vista de solo lectura de enviadas; si se pulsan estado y valor en el mismo instante el valor puede pisar el estado (solo ocurre con eventos simultáneos, no con uso humano).
+
+### 2026-10-29 · Núcleo offline
+- **Autor:** Claude Code
+- **Qué se hizo:** base Dexie (borradores, cola, fotos, catálogo); cola de envío idempotente con reintentos de espera creciente (2 s hasta 5 min, 12 intentos), recuperación de entradas `sending`, distinción de errores reintentables; transporte Supabase (Storage + RPC `submit_inspection`); controlador de sincronización; compresión de fotos.
+- **Archivos:** `src/lib/offline/{db,outbox,transport,sync,compress}.ts`, `outbox.test.ts`.
+- **Verificación:** `pnpm test` 27/27 en ese momento (13 nuevos): encola sin red, envía al reconectar, sin duplicados (pasadas simultáneas, mismo id, respuesta perdida), fotos no se re-suben, rechazo permanente no se reintenta.
+- **Pendiente / riesgos:** probado con servidor simulado, no con Supabase ni red real en el navegador; la compresión real de imagen no tiene test (solo el cálculo de tamaño).
+
+### 2026-10-29 · Logo BBOSCH en los formatos
+- **Autor:** Claude Code
+- **Qué se hizo:** logo en el encabezado de los dos formatos (Cobre y Clásico) dentro de una caja blanca redondeada; copia en `public/brand/`. Regla anotada en `docs/DESIGN.md`.
+- **Archivos:** `public/brand/bbosch-logo.png`, `docs/muestras/*.html`, `docs/DESIGN.md`.
+- **Verificación:** logo carga en pantalla; páginas del formato Cobre caben; Clásico quedó con 16 ítems en la página 1 y no se revisó visualmente tras el ajuste.
+- **Pendiente / riesgos:** el PDF final debe usar el mismo PNG.
+
+### 2026-10-29 · Paso 3: autenticación y rutas por rol
+- **Autor:** Claude Code
+- **Qué se hizo:** clientes Supabase (navegador, servidor, proxy), `src/proxy.ts` con chequeo optimista por rol, `requireRole()` en los layouts, login y registro (solo técnico) con diseño propio, pantalla `/supervisor/usuarios` para asignar roles.
+- **Archivos:** `src/proxy.ts`, `src/lib/supabase/*`, `src/lib/auth/*`, `src/app/login/*`, `src/app/{tecnico,supervisor}/**`, `src/app/globals.css`, `next.config.ts`.
+- **Verificación:** lint, tsc, build sin errores; sin sesión `/tecnico` redirige a `/login?next=/tecnico`; login visto a 1440px y 375px.
+- **Pendiente / riesgos:** login real, cambio de rol y RLS sin probar (sin base local). La fuente Geist no cargó en la prueba por falta de acceso a Google Fonts.
+
+### 2026-10-29 · Plantilla real y esquema de plantillas
+- **Autor:** Claude Code
+- **Qué se hizo:** el esquema Zod pasó a ítems de verificación del estándar EST-ELEC-INSP-MLP-BBOSCH-12 (estado BN/ML/NT/NA/NR, valor con unidad, observación, fotos) más cabecera, roles y lecturas. El seed reemplaza el ejemplo por la plantilla real de 29 ítems.
+- **Archivos:** `src/lib/templates/{schema,validate,validate.test}.ts`, `supabase/seed.sql`.
+- **Verificación:** `pnpm test` 14/14, lint y tsc sin errores.
+- **Pendiente / riesgos:** plantillas de los demás equipos y del modo Mantenimiento programado.
+
+### 2026-10-29 · Diseño Cobre y formularios de muestra
+- **Autor:** Claude Code
+- **Qué se hizo:** a partir del PDF 740XF001 y el .doc del estándar se hicieron `informe-transformador-piso.html` y `formulario-transformador-piso.html` (formulario interactivo con informe en vivo, validación de reglas y envío simulado). Se eligió y luego se reemplazó SAP por el diseño Cobre; se retiró la geo-referencia a pedido del usuario. `docs/DESIGN.md` documenta el sistema.
+- **Archivos:** `docs/muestras/*.html`, `docs/DESIGN.md`.
+- **Verificación:** probado en el navegador a 1440px y 375px; flujo completo del formulario (errores, folio simulado, bloqueo).
+- **Pendiente / riesgos:** es una maqueta; el PDF real aún no existe.
+
+### 2026-10-29 · Paso 2 (parcial): migraciones, seed y Zod
+- **Autor:** Claude Code
+- **Qué se hizo:** migraciones `0001` a `0006`: perfiles y guard de rol, catálogo, plantillas inmutables, inspecciones con triggers de transición e inmutabilidad, auditoría, RLS en todas las tablas, buckets privados y RPC `submit_inspection` / `review_inspection`. Seed con catálogo (4 áreas, 5 equipos, 2 modos) y usuarios de desarrollo.
+- **Archivos:** `supabase/migrations/*.sql`, `supabase/seed.sql`, `supabase/config.toml`.
+- **Verificación:** **no verificado contra Postgres**: Docker Desktop no arranca porque WSL2 no está instalado.
+- **Pendiente / riesgos:** aplicar con `supabase db reset` y corregir lo que falle; escribir el test RLS.
+
+### 2026-10-29 · Paso 1: scaffold
+- **Autor:** Claude Code
+- **Qué se hizo:** proyecto Next 16.4.3 con React 19, Tailwind 4 y TypeScript estricto en `Proyectos/mlp-inspecciones`; dependencias aprobadas (dexie, zod, react-hook-form, signature_pad, @react-pdf/renderer, @supabase/supabase-js, @supabase/ssr, base de shadcn, vitest, fake-indexeddb, supabase CLI); `.env.example` solo con nombres de variables.
+- **Archivos:** `package.json`, `vitest.config.ts`, `.env.example`, `.gitignore`.
+- **Verificación:** `pnpm lint`, `pnpm tsc --noEmit`, `pnpm build` sin errores.
+- **Pendiente / riesgos:** `signature_pad` y `react-hook-form` están instaladas pero aún sin uso (la firma se dibujó con canvas propio).

@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+/* Tokens del sistema «Cobre» (ver docs/DESIGN.md). Sin modo oscuro. */
+@theme {
+  --color-graf: #14181d;
+  --color-graf-2: #232a31;
+  --color-cu: #c4602d;
+  --color-cu-soft: #f6e6dc;
+  --color-paper: #f6f4f0;
+  --color-hair: #e1ddd5;
+  --color-sub: #5b646d;
+  --color-ok: #1d7a46;
+  --color-bad: #bb0000;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), "Segoe UI", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, Consolas, monospace;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-graf);
+  font-family: var(--font-sans);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
