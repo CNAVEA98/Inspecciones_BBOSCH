@@ -82,6 +82,13 @@ Referencia visual interactiva (sin servidor): `docs/muestras/formulario-transfor
 
 ## Registro
 
+### 2026-10-30 · Una sola carpeta de trabajo: limpieza de copias duplicadas
+- **Autor:** Claude Code (sesión de Cristóbal)
+- **Qué se hizo:** la única carpeta de trabajo es `C:\Proyectos\mlp-inspecciones` (enlazada a `CNAVEA98/Inspecciones_BBOSCH`). Se eliminó el contenido de la copia antigua `E:\Proyectos\mlp-inspecciones` tras comprobar que no tenía nada que no estuviera en C: (los 6 archivos distintos eran los actualizados hoy en C:). La carpeta `entregas-vercel` (ZIP, SQL concatenados, demo) queda **obsoleta**: la demo vigente es `demo/` del repo (idéntica, comprobado archivo por archivo) y los ZIP y SQL ya no se mantienen. Las entradas antiguas de esta bitácora que citan `entregas-vercel/` o `vercel-demo.zip` se conservan como historia. `docs/DEPLOY_VERCEL.md` se reescribió: la demo se despliega desde GitHub con Root Directory `demo`, y los SQL salen de `supabase/migrations/` y `supabase/seed.sql`.
+- **Archivos:** `docs/DEPLOY_VERCEL.md`, `docs/BITACORA.md`.
+- **Verificación:** comparación por hash de la demo (E:, C: y `demo/`): sin diferencias. **No verificado / pendiente de ejecutar por el usuario:** el borrado de `C:\Proyectos\entregas-vercel` y `E:\Proyectos\entregas-vercel` fue bloqueado por el sistema de permisos, y en `E:\Proyectos\mlp-inspecciones` queda la carpeta vacía `.claude` porque la sesión de Claude Code la tenía en uso. Esas tres carpetas hay que borrarlas a mano.
+- **Pendiente / riesgos:** nunca abrir Claude Code ni Visual Studio Code desde E:. El despliegue en Vercel descrito en `docs/DEPLOY_VERCEL.md` no se ha probado.
+
 ### 2026-10-30 · Supabase local funcionando y usuario supervisor@bbosch.cl
 - **Autor:** Claude Code (sesión de Cristóbal)
 - **Qué se hizo:** con Docker Desktop y WSL2 operativos se levantó Supabase local (`supabase start`): **las migraciones 0001 a 0006 y el seed se aplicaron sin errores por primera vez en Postgres real**. Se agregó al seed el usuario `supervisor@bbosch.cl` (contraseña `1234`, rol `supervisor`). Se actualizó `.env.local` (no versionado) con la URL y la anon key locales. Se documentó en `CLAUDE.md` el flujo de equipo con GitHub (rama, bitácora en el mismo commit, PR).
